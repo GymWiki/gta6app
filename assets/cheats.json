@@ -1,0 +1,18 @@
+{
+  "data_version": 1,
+  "last_updated": "2026-11-19",
+  "cheats": [
+    {"id":"player_250k","name":"$250,000","category":"Player","effect":"Instantly adds $250,000 to your current character's bank account.","dpad_sequence":["UP","RIGHT","DOWN","LEFT","UP","LEFT","DOWN","RIGHT"],"unlock_requirement":"Complete the main story (or earn $250,000 via fencing)."},
+    {"id":"player_no_fall_damage","name":"No Fall Damage","category":"Player","effect":"Prevents all health loss from falling.","dpad_sequence":null,"unlock_requirement":"Survive 20 free falls of at least 40 feet (12m)."},
+    {"id":"player_unlimited_focus","name":"Unlimited Focus","category":"Player","effect":"Keeps your focus meter full.","dpad_sequence":null,"unlock_requirement":"Complete the main story."},
+    {"id":"player_body_armor","name":"Body Armor","category":"Player","effect":"Gives you full body armor.","dpad_sequence":null,"unlock_requirement":"Complete 100 workouts."},
+    {"id":"combat_raise_heat","name":"Raise Heat Level","category":"Combat","effect":"Raises your wanted level.","dpad_sequence":["LEFT","DOWN","RIGHT","DOWN","UP","DOWN","UP"],"unlock_requirement":"Lose a 3-star wanted level 25 times. (Sources disagree: some say escape rather than lose.)"},
+    {"id":"combat_raise_wanted","name":"Raise Wanted Level","category":"Combat","effect":"Raises your wanted level by one star.","dpad_sequence":null,"unlock_requirement":"Escape a 3-star wanted level 50 times."},
+    {"id":"combat_max_ammo","name":"Max Ammo","category":"Combat","effect":"Refills ammo for all carried weapons.","dpad_sequence":null,"unlock_requirement":"Earn 25 bronze-or-higher medals at the shooting range. (Tier mapping across Max/Infinite/No Reload is unconfirmed.)"},
+    {"id":"combat_infinite_ammo","name":"Infinite Ammo","category":"Combat","effect":"Weapons never run out of ammo.","dpad_sequence":null,"unlock_requirement":"Earn 25 silver medals at the shooting range. (Unconfirmed tier mapping.)"},
+    {"id":"combat_no_reload","name":"No Reload","category":"Combat","effect":"Weapons never need reloading.","dpad_sequence":null,"unlock_requirement":"Earn 25 gold medals at the shooting range. (Unconfirmed tier mapping.)"},
+    {"id":"vehicle_unlimited_nitrous","name":"Unlimited Nitrous","category":"Vehicles","effect":"Gives vehicles unlimited nitrous.","dpad_sequence":null,"unlock_requirement":"Complete 50 stunt jumps."},
+    {"id":"env_drunk","name":"Drunk","category":"Environment","effect":"Makes the screen and controls drunken.","dpad_sequence":null,"unlock_requirement":"TBA (sources conflict)."},
+    {"id":"filter_pinhole","name":"Pinhole","category":"Filters","effect":"Applies a pinhole camera screen filter.","dpad_sequence":null,"unlock_requirement":"Complete the main story."}
+  ]
+}
