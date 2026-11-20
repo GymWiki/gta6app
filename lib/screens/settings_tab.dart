@@ -12,18 +12,17 @@ class SettingsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     return ListView(padding: const EdgeInsets.all(16), children: [
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: Vice.card, borderRadius: BorderRadius.circular(14), border: Border.all(color: Vice.border)),
+      NeonCard(
+        accent: Vice.cyan,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Data', style: TextStyle(color: Vice.text, fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
           Text('data_version: ${s.data.dataVersion}\nlast_updated: ${s.data.lastUpdated}\ncheats loaded: ${s.total}',
-              style: const TextStyle(color: Vice.muted)),
-          const SizedBox(height: 12),
+              style: const TextStyle(color: Vice.muted, fontSize: 15, height: 1.5)),
+          const SizedBox(height: 16),
           FilledButton.icon(
-            style: FilledButton.styleFrom(backgroundColor: Vice.pink),
+            style: FilledButton.styleFrom(
+                backgroundColor: Vice.pink, minimumSize: const Size.fromHeight(52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
             onPressed: s.syncing
                 ? null
                 : () async {
@@ -45,7 +44,11 @@ class SettingsTab extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       OutlinedButton.icon(
-        style: OutlinedButton.styleFrom(foregroundColor: Vice.pink, side: const BorderSide(color: Vice.pink)),
+        style: OutlinedButton.styleFrom(
+            foregroundColor: Vice.pink,
+            minimumSize: const Size.fromHeight(52),
+            side: const BorderSide(color: Vice.pink),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
         onPressed: () => _confirmReset(context, s),
         icon: const Icon(Icons.delete_outline),
         label: const Text('Reset Progress'),
@@ -53,7 +56,7 @@ class SettingsTab extends StatelessWidget {
       const SizedBox(height: 24),
       const Text(
         'Unofficial fan-made companion app. Not affiliated with, endorsed, or sponsored by Rockstar Games or Take-Two Interactive.',
-        style: TextStyle(color: Vice.muted, fontSize: 12, height: 1.4),
+        style: TextStyle(color: Vice.muted, fontSize: 13, height: 1.5),
       ),
     ]);
   }
@@ -62,7 +65,7 @@ class SettingsTab extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Vice.card,
+        backgroundColor: Vice.surfaceHi,
         title: const Text('Reset progress?'),
         content: const Text('This clears all unlocked checkmarks and favorites. It cannot be undone.'),
         actions: [
