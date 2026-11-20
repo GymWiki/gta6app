@@ -68,6 +68,12 @@
         "addedAt": { "$ref": "#/definitions/isoDate" },
         "updatedAt": { "$ref": "#/definitions/isoDate" },
         "tags": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "aliases": {
+          "description": "Optional extra search words and synonyms in any language (e.g. 'politie', 'cops'). Matched by the in-app search.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
         "isNew": { "type": "boolean" }
       }
     },

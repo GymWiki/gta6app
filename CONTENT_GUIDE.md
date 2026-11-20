@@ -17,6 +17,7 @@ Bestanden:
 2. Zet in `lib/services/cheat_repository.dart` de constante `contentUrl` op:
    `https://raw.githubusercontent.com/<JOUW-USER>/<JOUW-REPO>/main/content.json`
    Zolang `<USER>`/`<REPO>` erin staan, doet de app geen netwerkverzoeken en gebruikt hij alleen de gebundelde content.
+4. Zet in `lib/services/feedback.dart` `feedbackEmail` op je eigen adres: dat is waar "Mis je een cheat? Meld het" naartoe gaat.
 3. Lokaal valideren: `pip install jsonschema`
 
 ## Een cheat toevoegen
@@ -43,6 +44,7 @@ Haal het object uit `cheats` en verhoog `contentVersion`. Het id blijft voor alt
 - `codes`: per platform optioneel: `ps5`, `xbox`, `pc`, `phone`. Een code is een lijst `["UP","DOWN","LEFT","RIGHT"]` of een tekst (bijv. een telefoonnummer). Geen code voor het gekozen platform = "CODE TBA".
 - Teksten (`title`, `effect`, `unlockRequirement`, `description`, categorienaam, announcement) zijn objecten per taal: `{ "en": "...", "nl": "..." }`. **`en` is verplicht** en is de fallback. Een extra taal toevoegen = een extra sleutel (`"de": "..."`); de app kiest de taal van het toestel.
 - `tags`: vrije zoekwoorden, doorzoekbaar in de app.
+- `aliases` (optioneel): extra zoekwoorden en synoniemen in elke taal, bijvoorbeeld `["politie", "cops"]`. Alleen nodig als iemand een cheat anders zou noemen dan de titel. De app kent daarnaast zelf veelgebruikte NL/EN-synoniemen (politie/cops/wanted, geld/money, auto/vehicle, enz.) en vergeeft kleine typfouten.
 - `description` is optioneel: een langere uitleg naast de korte `effect`.
 - `announcement` (optioneel): een banner bovenaan. Zet `active: true`. Gebruikers kunnen hem wegklikken; wijzig het `id` om hem opnieuw te tonen. Zet `active: false` of verwijder het blok om hem te verbergen.
 
@@ -50,6 +52,10 @@ Haal het object uit `cheats` en verhoog `contentVersion`. Het id blijft voor alt
 
 - `contentVersion`: **verhoog bij elke wijziging**. De app downloadt/gebruikt alleen content met een hoger nummer dan wat hij al heeft. Verlaag het nooit: de app negeert lagere versies en de validatie in CI faalt.
 - `schemaVersion`: alleen verhogen als je de *structuur* breekt op een manier die oude apps niet snappen (dan is ook een app-update nodig). Oude apps tonen dan een zachte melding "Update de app voor nieuwe functies" en blijven hun laatste geldige content gebruiken. Gewone content-wijzigingen raken dit nooit.
+
+## Welke cheats staan waar in de app
+
+De app toont standaard alleen cheats **met een code** in de hoofdlijst. Cheats zonder code (`codes` ontbreekt of is leeg) staan onderaan in de ingeklapte sectie "Nog geen code bekend". Zodra je een code toevoegt, springt de cheat vanzelf naar de hoofdlijst. Gebruikers kunnen dit uitzetten in Instellingen.
 
 ## Lokaal valideren
 

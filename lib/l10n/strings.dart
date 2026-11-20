@@ -86,4 +86,47 @@ class Strings {
   String get appUpdateBody => _(
       'There is new content this version does not support yet.',
       'Er is nieuwe content die deze versie nog niet ondersteunt.');
+
+  // --- Redesign: header, filters, rows, sheets ---
+  String get infoTooltip => _('How it works', 'Uitleg');
+  String get filterWithCode => _('With code', 'Met code');
+  String get filterFavorites => _('Favorites', 'Favorieten');
+  String get quickFavorites => _('FAVORITES', 'FAVORIETEN');
+  String get quickRecent => _('RECENT', 'RECENT');
+  String noCodeSection(int n) => _('No code known yet ($n)', 'Nog geen code bekend ($n)');
+  String groupHeader(String name, int n) => '$name · $n';
+  String noResultFor(String q) => _('No result for "$q"', 'Geen resultaat voor "$q"');
+  String get noFavorites => _('No favorites yet. Tap the star on a cheat.', 'Nog geen favorieten. Tik op de ster bij een cheat.');
+  String get reportMissing => _('Missing a cheat? Report it', 'Mis je een cheat? Meld het');
+  String get reportCopied => _('Address copied. Send us your cheat idea.', 'Adres gekopieerd. Stuur ons je cheat-tip.');
+  String get copyCode => _('Copy code', 'Kopieer code');
+  String get codeCopied => _('Code copied', 'Code gekopieerd');
+  String get markUsed => _('Mark as unlocked', 'Markeer als ontgrendeld');
+  String get unmarkUsed => _('Unlocked', 'Ontgrendeld');
+  String get unlockedTag => _('Unlocked in-game', 'In de game ontgrendeld');
+  String get statusWord => _('Status', 'Status');
+  String get statusVerifiedInfo => _('Tested in-game and confirmed.', 'In de game getest en bevestigd.');
+  String get statusUnverifiedInfo => _('Reported by guides, not tested by us yet.', 'Gemeld door gidsen, nog niet door ons getest.');
+  String get statusRumorInfo => _('Unconfirmed rumor. Treat with care.', 'Onbevestigd gerucht. Wees voorzichtig.');
+  String get legend => _('Status legend', 'Statuslegenda');
+
+  // Info sheet
+  String get infoTitle => _('How it works', 'Zo werkt het');
+  String get infoEnter => _('Entering a code', 'Een code invoeren');
+  String get infoPs5 => _('PS5: open the phone with D-pad Up, hold L1, press R1, then enter the D-pad code.', 'PS5: open de telefoon met D-pad omhoog, houd L1 ingedrukt, druk op R1 en voer de D-pad-code in.');
+  String get infoXbox => _('Xbox: open the phone with D-pad Up, hold LB, press RB, then enter the D-pad code.', 'Xbox: open de telefoon met D-pad omhoog, houd LB ingedrukt, druk op RB en voer de D-pad-code in.');
+  String get infoMore => _('Good to know', 'Goed om te weten');
+
+  // First start
+  String get pickPlatformTitle => _('Which console do you play on?', 'Op welke console speel je?');
+  String get pickPlatformBody => _('We show the right button hints. You can change this any time.', 'Zo tonen we de juiste knop-uitleg. Je kunt dit altijd wijzigen.');
+  String get gotIt => _('Got it', 'Begrepen');
+
+  // Settings
+  String get settingsListTitle => _('List', 'Lijst');
+  String get settingsNoCode => _('Collapse cheats without a code', 'Cheats zonder code inklappen');
+  String get settingsNoCodeHint => _(
+      'Cheats whose code is not known yet go in a collapsed section at the bottom.',
+      'Cheats waarvan de code nog niet bekend is komen in een ingeklapte sectie onderaan.');
+  String get showHowItWorks => _('How it works', 'Uitleg bekijken');
 }

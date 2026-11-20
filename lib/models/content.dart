@@ -26,6 +26,9 @@ class Cheat {
   final DateTime addedAt;
   final DateTime updatedAt;
   final List<String> tags;
+
+  /// Extra search words/synonyms (any language), optional in content.json.
+  final List<String> aliases;
   final bool isNew;
 
   const Cheat({
@@ -40,10 +43,14 @@ class Cheat {
     this.description,
     this.codes = const {},
     this.tags = const [],
+    this.aliases = const [],
     this.isNew = false,
   });
 
   CheatCode? codeFor(String platform) => codes[platform];
+
+  /// The code shown for [platform]; falls back to the other console (same D-pad), then null.
+  CheatCode? displayCode(String platform) => codes[platform] ?? codes['ps5'] ?? codes['xbox'] ?? codes['phone'] ?? codes['pc'];
 }
 
 class Announcement {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/app_state.dart';
+import '../widgets/info_sheet.dart';
 import '../widgets/sync_feedback.dart';
 import '../widgets/theme.dart';
 
@@ -36,6 +37,30 @@ class SettingsTab extends StatelessWidget {
             label: Text(t.refreshNow),
           ),
         ]),
+      ),
+      const SizedBox(height: 12),
+      NeonCard(
+        accent: Vice.cyan,
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        child: SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(t.settingsNoCode, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          subtitle: Text(t.settingsNoCodeHint, style: const TextStyle(color: Vice.muted, fontSize: 13)),
+          value: s.withCodeOnly,
+          onChanged: s.setWithCodeOnly,
+        ),
+      ),
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Vice.text,
+          minimumSize: const Size.fromHeight(52),
+          side: const BorderSide(color: Vice.border),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        onPressed: () => showInfoSheet(context),
+        icon: const Icon(Icons.info_outline_rounded),
+        label: Text(t.showHowItWorks),
       ),
       const SizedBox(height: 12),
       OutlinedButton.icon(

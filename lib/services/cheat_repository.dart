@@ -37,6 +37,9 @@ class UserState {
   final Map<String, String> seen;
   final bool seenInitialized;
   final String? dismissedAnnouncementId;
+  final bool withCodeOnly;
+  final bool platformChosen;
+  final List<String> recentIds;
   const UserState({
     required this.unlockedIds,
     required this.favoriteIds,
@@ -45,6 +48,9 @@ class UserState {
     required this.seen,
     required this.seenInitialized,
     required this.dismissedAnnouncementId,
+    required this.withCodeOnly,
+    required this.platformChosen,
+    required this.recentIds,
   });
 }
 
@@ -60,6 +66,9 @@ class CheatRepository {
   static const _kBanner = 'bannerDismissed';
   static const _kSeen = 'seenCheats';
   static const _kAnnouncement = 'dismissedAnnouncementId';
+  static const _kWithCode = 'withCodeOnly';
+  static const _kPlatformChosen = 'platformChosen';
+  static const _kRecent = 'recentIds';
 
   final SharedPreferences prefs;
   final http.Client _client;
@@ -175,6 +184,9 @@ class CheatRepository {
       seen: seen,
       seenInitialized: prefs.containsKey(_kSeen),
       dismissedAnnouncementId: prefs.getString(_kAnnouncement),
+      withCodeOnly: prefs.getBool(_kWithCode) ?? true,
+      platformChosen: prefs.getBool(_kPlatformChosen) ?? false,
+      recentIds: prefs.getStringList(_kRecent) ?? const [],
     );
   }
 
@@ -184,8 +196,12 @@ class CheatRepository {
   Future<void> saveBannerDismissed(bool v) => prefs.setBool(_kBanner, v);
   Future<void> saveSeen(Map<String, String> m) => prefs.setString(_kSeen, jsonEncode(m));
   Future<void> saveDismissedAnnouncement(String id) => prefs.setString(_kAnnouncement, id);
+  Future<void> saveWithCodeOnly(bool v) => prefs.setBool(_kWithCode, v);
+  Future<void> savePlatformChosen() => prefs.setBool(_kPlatformChosen, true);
+  Future<void> saveRecent(List<String> ids) => prefs.setStringList(_kRecent, ids);
   Future<void> resetProgress() async {
     await prefs.remove(_kUnlocked);
     await prefs.remove(_kFavs);
+    await prefs.remove(_kRecent);
   }
 }

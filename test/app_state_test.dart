@@ -63,7 +63,7 @@ void main() {
 
     // Ids survive even when the cheat disappeared from the content.
     expect(state.favoriteIds, {'a', 'b'});
-    expect(state.favorites.map((c) => c.id), ['a']);
+    expect(state.quickFavorites.map((c) => c.id), ['a']);
     expect(state.unlockedCount, 1);
 
     // Badges: 'a' was updated, 'c' is new; tapping marks them seen.
@@ -100,8 +100,8 @@ void main() {
     expect(state.badgeFor(state.cheats[0]), isNull);
     expect(state.badgeFor(state.cheats[1]), CheatBadge.fresh);
     state.setQuery('money');
-    expect(state.cheatsTabList.map((c) => c.id), ['old']);
+    expect(state.visibleCheats.map((c) => c.id), ['old']);
     state.setQuery('zebra');
-    expect(state.cheatsTabList.map((c) => c.id), ['old']);
+    expect(state.visibleCheats.map((c) => c.id), ['old']);
   });
 }

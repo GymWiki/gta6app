@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../models/content.dart';
 import '../providers/app_state.dart';
-import '../widgets/cheat_card.dart';
-import '../widgets/neon_chip.dart';
+import '../services/feedback.dart';
+import '../widgets/cheat_row.dart';
 import '../widgets/notice_banners.dart';
+import '../widgets/quick_strip.dart';
 import '../widgets/sync_feedback.dart';
 import '../widgets/theme.dart';
 
@@ -16,8 +17,10 @@ class CheatsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
     final t = s.t;
-    final list = s.cheatsTabList;
-    final favs = s.favorites;
+    final view = s.view;
+    // When nothing is left in the main list, show the "no code yet" results right away.
+    final noCodeOpen = s.noCodeExpanded || (view.mainCheats.isEmpty && view.noCode.isNotEmpty);
+
     return RefreshIndicator(
       color: Vice.pink,
       backgroundColor: Vice.surfaceHi,
@@ -26,168 +29,146 @@ class CheatsTab extends StatelessWidget {
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: NoticeBanners())),
-          const SliverToBoxAdapter(child: _GuideCard()),
-          if (favs.isNotEmpty) ...[
-            _label('${t.pinned} (${favs.length})', Vice.gold, icon: Icons.star_rounded),
-            SliverList.builder(itemCount: favs.length, itemBuilder: (_, i) => CheatCard(cheat: favs[i])),
-          ],
-          SliverPersistentHeader(pinned: true, delegate: _ChipsHeader(s)),
-          if (favs.isNotEmpty) _label('${t.allCheats} (${list.length})', Vice.muted),
-          if (list.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.search_off_rounded, size: 48, color: Vice.muted),
-                    const SizedBox(height: 8),
-                    Text(t.noMatch, style: const TextStyle(color: Vice.muted, fontSize: 16), textAlign: TextAlign.center),
-                    const SizedBox(height: 8),
-                    FilledButton.tonal(
-                      onPressed: () {
-                        s.setQuery('');
-                        s.setCategory(kAllCategories);
-                      },
-                      child: Text(t.clearFilters),
-                    ),
-                  ]),
+          const SliverToBoxAdapter(child: NoticeBanners()),
+          if (s.showQuickStrip) const SliverToBoxAdapter(child: QuickStrip()),
+          if (view.isEmpty)
+            SliverFillRemaining(hasScrollBody: false, child: _EmptyState(state: s))
+          else ...[
+            for (final g in view.groups)
+              if (g.cheats.isNotEmpty)
+                if (view.grouped && g.category != null)
+                  SliverMainAxisGroup(slivers: [
+                    SliverPersistentHeader(pinned: true, delegate: _GroupHeader(g.category!, g.cheats.length, t.groupHeader)),
+                    SliverList.builder(itemCount: g.cheats.length, itemBuilder: (_, i) => CheatRow(cheat: g.cheats[i])),
+                  ])
+                else
+                  SliverList.builder(itemCount: g.cheats.length, itemBuilder: (_, i) => CheatRow(cheat: g.cheats[i])),
+            if (view.noCode.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: _NoCodeHeader(
+                  label: t.noCodeSection(view.noCode.length),
+                  open: noCodeOpen,
+                  onTap: s.toggleNoCodeExpanded,
                 ),
               ),
-            )
-          else
-            SliverList.builder(itemCount: list.length, itemBuilder: (_, i) => CheatCard(cheat: list[i])),
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              if (noCodeOpen) SliverList.builder(itemCount: view.noCode.length, itemBuilder: (_, i) => CheatRow(cheat: view.noCode[i])),
+            ],
+          ],
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
         ],
       ),
     );
   }
-
-  SliverToBoxAdapter _label(String text, Color c, {IconData? icon}) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 16, 2),
-          child: Row(children: [
-            if (icon != null) ...[Icon(icon, size: 16, color: c), const SizedBox(width: 6)],
-            Flexible(
-              child: Text(text, style: TextStyle(color: c, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 13)),
-            ),
-          ]),
-        ),
-      );
 }
 
-/// How to enter a code on the selected console + the collapsible story note.
-class _GuideCard extends StatelessWidget {
-  const _GuideCard();
+class _GroupHeader extends SliverPersistentHeaderDelegate {
+  final CheatCategory category;
+  final int count;
+  final String Function(String, int) format;
+  _GroupHeader(this.category, this.count, this.format);
 
   @override
-  Widget build(BuildContext context) {
-    final s = context.watch<AppState>();
-    final t = s.t;
-    final reduce = MediaQuery.of(context).disableAnimations;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: Vice.cyan.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Vice.cyan.withValues(alpha: 0.5)),
-          ),
-          child: Row(children: [
-            const Icon(Icons.phone_iphone_rounded, size: 20, color: Vice.cyan),
-            const SizedBox(width: 10),
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: reduce ? Duration.zero : Vice.dur,
-                layoutBuilder: (current, previous) => Stack(
-                  alignment: Alignment.centerLeft,
-                  children: [...previous, if (current != null) current],
-                ),
-                child: Text(
-                  t.phoneHint(s.platform == 'ps5'),
-                  key: ValueKey(s.platform),
-                  style: const TextStyle(color: Vice.cyan, fontWeight: FontWeight.w800, fontSize: 15),
-                ),
-              ),
-            ),
-          ]),
-        ),
-        AnimatedSize(
-          duration: reduce ? Duration.zero : Vice.dur,
-          curve: Curves.easeOut,
-          alignment: Alignment.topCenter,
-          child: s.bannerDismissed
-              ? Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: () => s.dismissBanner(false),
-                    icon: const Icon(Icons.info_outline_rounded, size: 18),
-                    label: Text(t.showNote),
-                    style: TextButton.styleFrom(foregroundColor: Vice.muted, minimumSize: const Size(48, 48)),
-                  ),
-                )
-              : Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.fromLTRB(12, 4, 0, 4),
-                  decoration: BoxDecoration(
-                    color: Vice.surface,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Vice.orange.withValues(alpha: 0.5)),
-                  ),
-                  child: Row(children: [
-                    const Icon(Icons.info_rounded, size: 18, color: Vice.orange),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(t.note, style: const TextStyle(color: Vice.muted, fontSize: 13.5, height: 1.4)),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: t.hideNote,
-                      onPressed: () => s.dismissBanner(true),
-                      icon: const Icon(Icons.close_rounded, size: 20, color: Vice.muted),
-                    ),
-                  ]),
-                ),
-        ),
+  double get minExtent => 36;
+  @override
+  double get maxExtent => 36;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final color = Vice.categoryColor(category.id);
+    return Container(
+      color: Vice.bg, // solid: nothing shows through behind a pinned header
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      alignment: Alignment.centerLeft,
+      child: Row(children: [
+        Icon(Vice.categoryIcon(category.id), size: 16, color: color),
+        const SizedBox(width: 8),
+        Text(format(category.name.toUpperCase(), count),
+            style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 12.5, letterSpacing: 1.2)),
       ]),
     );
   }
+
+  @override
+  bool shouldRebuild(covariant _GroupHeader old) => old.category.id != category.id || old.count != count;
 }
 
-class _ChipsHeader extends SliverPersistentHeaderDelegate {
-  final AppState s;
-  _ChipsHeader(this.s);
-  @override
-  double get minExtent => 60;
-  @override
-  double get maxExtent => 60;
+class _NoCodeHeader extends StatelessWidget {
+  final String label;
+  final bool open;
+  final VoidCallback onTap;
+  const _NoCodeHeader({required this.label, required this.open, required this.onTap});
 
   @override
-  Widget build(BuildContext context, double shrink, bool overlaps) => Container(
-        color: Vice.bg.withValues(alpha: 0.96),
-        child: ListView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          children: [
-            for (final c in [CheatCategory(kAllCategories, s.t.filterAll), ...s.categories])
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: NeonChip(
-                  label: '${c.name} (${s.countFor(c.id)})',
-                  selected: s.category == c.id,
-                  color: c.id == kAllCategories ? Vice.pink : Vice.categoryColor(c.id),
-                  onTap: () => s.setCategory(c.id),
-                ),
-              ),
-          ],
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        expanded: open,
+        label: label,
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            height: 52,
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: const BoxDecoration(border: Border(top: BorderSide(color: Vice.border), bottom: BorderSide(color: Vice.border))),
+            child: Row(children: [
+              const Icon(Icons.search_rounded, size: 18, color: Vice.gold),
+              const SizedBox(width: 10),
+              Expanded(child: Text(label, style: const TextStyle(color: Vice.gold, fontWeight: FontWeight.w800, fontSize: 14))),
+              Icon(open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: Vice.muted),
+            ]),
+          ),
         ),
       );
+}
+
+class _EmptyState extends StatelessWidget {
+  final AppState state;
+  const _EmptyState({required this.state});
 
   @override
-  bool shouldRebuild(covariant _ChipsHeader old) => true;
+  Widget build(BuildContext context) {
+    final t = state.t;
+    final favoritesEmpty = state.category == kFavoritesScope && state.query.trim().isEmpty;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(favoritesEmpty ? Icons.star_outline_rounded : Icons.search_off_rounded, size: 44, color: Vice.muted),
+          const SizedBox(height: 10),
+          Text(
+            favoritesEmpty ? t.noFavorites : (state.query.trim().isEmpty ? t.noMatch : t.noResultFor(state.query.trim())),
+            style: const TextStyle(color: Vice.text, fontSize: 16, fontWeight: FontWeight.w700),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          if (!favoritesEmpty) ...[
+            FilledButton.tonal(
+              style: FilledButton.styleFrom(minimumSize: const Size(48, 48)),
+              onPressed: () {
+                state.setQuery('');
+                state.setCategory(kAllCategories);
+              },
+              child: Text(t.clearFilters),
+            ),
+            const SizedBox(height: 4),
+            TextButton.icon(
+              style: TextButton.styleFrom(minimumSize: const Size(48, 48), foregroundColor: Vice.cyan),
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                final opened = await reportMissingCheat(state.query.trim());
+                if (!opened) {
+                  messenger
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(SnackBar(content: Text(t.reportCopied)));
+                }
+              },
+              icon: const Icon(Icons.mail_outline_rounded, size: 18),
+              label: Text(t.reportMissing),
+            ),
+          ],
+        ]),
+      ),
+    );
+  }
 }

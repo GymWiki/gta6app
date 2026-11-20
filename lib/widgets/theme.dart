@@ -81,15 +81,16 @@ class Vice {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surface,
         indicatorColor: pink.withValues(alpha: 0.22),
-        height: 68,
+        height: 56,
+        labelPadding: EdgeInsets.zero,
         labelTextStyle: WidgetStateProperty.resolveWith((s) => TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w800,
-              letterSpacing: 0.6,
+              letterSpacing: 0.5,
               color: s.contains(WidgetState.selected) ? text : muted,
             )),
         iconTheme: WidgetStateProperty.resolveWith(
-            (s) => IconThemeData(color: s.contains(WidgetState.selected) ? pink : muted, size: 26)),
+            (s) => IconThemeData(color: s.contains(WidgetState.selected) ? pink : muted, size: 24)),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: surfaceHi,

@@ -147,6 +147,7 @@ class ContentParser {
       addedAt: addedAt,
       updatedAt: updatedAt,
       tags: (c['tags'] is List) ? (c['tags'] as List).whereType<String>().toList() : const [],
+      aliases: (c['aliases'] is List) ? (c['aliases'] as List).whereType<String>().toList() : const [],
       isNew: c['isNew'] == true,
     );
   }

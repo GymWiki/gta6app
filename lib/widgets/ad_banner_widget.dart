@@ -1,12 +1,20 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../services/ad_config.dart';
+import 'theme.dart';
 
-/// Adaptive anchored banner. Collapses to 0px when not loaded (offline/failed).
+/// Adaptive anchored banner in a fixed strip above the nav bar (never over the list).
+/// The height is reserved while the ad loads, so nothing shifts when it appears; if the
+/// ad fails (offline, no fill) the strip collapses to 0px.
 class AdBannerWidget extends StatefulWidget {
+  /// Tests/screenshots only: draw a placeholder strip of this height where an ad would be.
+  @visibleForTesting
+  static double? debugPlaceholderHeight;
+
   const AdBannerWidget({super.key});
   @override
   State<AdBannerWidget> createState() => _AdBannerWidgetState();
@@ -14,7 +22,9 @@ class AdBannerWidget extends StatefulWidget {
 
 class _AdBannerWidgetState extends State<AdBannerWidget> {
   BannerAd? _ad;
+  AdSize? _size;
   bool _loaded = false;
+  bool _failed = false;
   bool _loading = false;
   int? _width;
   Orientation? _orientation;
@@ -66,7 +76,10 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
               a.dispose();
               return;
             }
-            setState(() => _loaded = true);
+            setState(() {
+              _loaded = true;
+              _failed = false;
+            });
           },
           onAdFailedToLoad: (a, _) {
             a.dispose();
@@ -75,14 +88,19 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
             setState(() {
               _ad = null;
               _loaded = false;
+              _failed = true;
             });
             _scheduleRetry();
           },
         ),
       );
-      _ad = ad;
+      setState(() {
+        _ad = ad;
+        _size = size; // reserve the strip now, so the ad does not push the list when it loads
+        _loaded = false;
+        _failed = false;
+      });
       old?.dispose();
-      _loaded = false;
       await ad.load();
     } catch (_) {
       // Ads must never break the app: collapse and try again later.
@@ -91,6 +109,7 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
         setState(() {
           _ad = null;
           _loaded = false;
+          _failed = true;
         });
         _scheduleRetry();
       }
@@ -99,7 +118,9 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
   void _scheduleRetry() {
     _retry?.cancel();
-    _retry = Timer(const Duration(seconds: 60), () { if (mounted) _load(); });
+    _retry = Timer(const Duration(seconds: 60), () {
+      if (mounted) _load();
+    });
   }
 
   @override
@@ -111,12 +132,29 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final placeholder = AdBannerWidget.debugPlaceholderHeight;
+    if (!adsSupported && placeholder != null) {
+      return Container(height: placeholder, color: Vice.surfaceHi, alignment: Alignment.center, child: const Text('AD', style: TextStyle(color: Vice.muted)));
+    }
     final ad = _ad;
-    if (!_loaded || ad == null) return const SizedBox.shrink(); // 0px, no gap
-    return SizedBox(
-      width: ad.size.width.toDouble(),
-      height: ad.size.height.toDouble(),
-      child: AdWidget(ad: ad),
+    final size = _size;
+    // Reserve the strip from the start (50dp until the adaptive size is known).
+    final show = adsSupported && !_failed;
+    final height = (size?.height ?? 50).toDouble();
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 150),
+      alignment: Alignment.topCenter,
+      child: show
+          ? SizedBox(
+              width: double.infinity,
+              height: height,
+              child: Center(
+                child: (_loaded && ad != null && size != null)
+                    ? SizedBox(width: size.width.toDouble(), height: size.height.toDouble(), child: AdWidget(ad: ad))
+                    : const SizedBox.shrink(),
+              ),
+            )
+          : const SizedBox(width: double.infinity),
     );
   }
 }
