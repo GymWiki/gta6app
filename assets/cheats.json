@@ -1,11 +1,11 @@
 {
-  "data_version": 2,
+  "data_version": 3,
   "last_updated": "2026-11-20",
   "cheats": [
     {"id": "player_250k", "name": "$250,000", "category": "Player", "effect": "Instantly adds $250,000 to your current character's bank account.", "dpad_sequence": ["UP", "RIGHT", "DOWN", "LEFT", "UP", "LEFT", "DOWN", "RIGHT"], "unlock_requirement": "Complete the main story (or earn $250,000 via fencing)."},
     {"id": "player_no_fall_damage", "name": "No Fall Damage", "category": "Player", "effect": "Prevents all health loss from falling.", "dpad_sequence": null, "unlock_requirement": "Survive 20 free falls of at least 40 feet (12m)."},
     {"id": "player_unlimited_focus", "name": "Unlimited Focus", "category": "Player", "effect": "Keeps your focus meter full.", "dpad_sequence": null, "unlock_requirement": "Complete the main story."},
-    {"id": "player_body_armor", "name": "Body Armor", "category": "Player", "effect": "Gives you full body armor.", "dpad_sequence": null, "unlock_requirement": "Complete 100 workouts."},
+    {"id": "player_body_armor", "name": "Body Armor", "category": "Player", "effect": "Gives you full body armor.", "dpad_sequence": ["DOWN","UP","LEFT","UP","UP","UP","UP","UP","DOWN","DOWN"], "unlock_requirement": "Complete 100 workouts."},
     {"id": "combat_raise_heat", "name": "Raise Heat Level", "category": "Combat", "effect": "Raises your wanted level.", "dpad_sequence": ["LEFT", "DOWN", "RIGHT", "DOWN", "UP", "DOWN", "UP"], "unlock_requirement": "Lose a 3-star wanted level 25 times. (Sources disagree: some say escape rather than lose.)"},
     {"id": "combat_raise_wanted", "name": "Raise Wanted Level", "category": "Combat", "effect": "Raises your wanted level by one star.", "dpad_sequence": null, "unlock_requirement": "Escape a 3-star wanted level 50 times."},
     {"id": "combat_max_ammo", "name": "Max Ammo", "category": "Combat", "effect": "Refills ammo for all carried weapons.", "dpad_sequence": null, "unlock_requirement": "Earn 25 bronze-or-higher medals at the shooting range. (Tier mapping across Max/Infinite/No Reload is unconfirmed.)"},
