@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../providers/app_state.dart';
 import '../widgets/neon_chip.dart';
+import '../widgets/notice_banners.dart';
+import '../widgets/sync_feedback.dart';
 import '../widgets/theme.dart';
 
 class TrackerTab extends StatelessWidget {
@@ -12,18 +14,21 @@ class TrackerTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final t = s.t;
     final list = s.trackerList;
     final pct = s.total == 0 ? 0.0 : s.unlockedCount / s.total;
+    final todo = s.total - s.unlockedCount;
+    final reduce = MediaQuery.of(context).disableAnimations;
     return RefreshIndicator(
       color: Vice.pink,
       backgroundColor: Vice.surfaceHi,
-      onRefresh: () async {
-        await s.refresh(force: true);
-      },
+      onRefresh: () => refreshWithFeedback(context, s),
       child: ListView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
         children: [
+          const NoticeBanners(),
           NeonCard(
             accent: Vice.cyan,
             child: Row(children: [
@@ -33,11 +38,10 @@ class TrackerTab extends StatelessWidget {
                 child: Stack(alignment: Alignment.center, children: [
                   TweenAnimationBuilder<double>(
                     tween: Tween(end: pct),
-                    duration: const Duration(milliseconds: 400),
+                    duration: reduce ? Duration.zero : const Duration(milliseconds: 400),
                     curve: Curves.easeOut,
                     builder: (_, v, __) => SizedBox.expand(
-                      child: CircularProgressIndicator(
-                          value: v, strokeWidth: 8, color: Vice.cyan, backgroundColor: Vice.border),
+                      child: CircularProgressIndicator(value: v, strokeWidth: 8, color: Vice.cyan, backgroundColor: Vice.border),
                     ),
                   ),
                   Text('${(pct * 100).round()}%', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
@@ -45,11 +49,19 @@ class TrackerTab extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('${s.unlockedCount} / ${s.total}',
-                      style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Vice.cyan)),
-                  const Text('Cheats Unlocked', style: TextStyle(color: Vice.muted, fontSize: 15)),
-                ]),
+                child: Semantics(
+                  label: '${s.unlockedCount} / ${s.total} ${t.cheatsUnlocked}',
+                  excludeSemantics: true,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('${s.unlockedCount} / ${s.total}',
+                          style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Vice.cyan)),
+                    ),
+                    Text(t.cheatsUnlocked, style: const TextStyle(color: Vice.muted, fontSize: 15)),
+                  ]),
+                ),
               ),
             ]),
           ),
@@ -58,22 +70,27 @@ class TrackerTab extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(children: [
               for (final e in {
-                TrackerFilter.all: 'All',
-                TrackerFilter.todo: 'To-Do (Locked)',
-                TrackerFilter.unlocked: 'Unlocked',
+                TrackerFilter.all: '${t.filterAll} (${s.total})',
+                TrackerFilter.todo: '${t.filterTodo} ($todo)',
+                TrackerFilter.unlocked: '${t.filterUnlocked} (${s.unlockedCount})',
               }.entries)
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: NeonChip(
-                      label: e.value, selected: s.trackerFilter == e.key, onTap: () => s.setTrackerFilter(e.key)),
+                  child: NeonChip(label: e.value, selected: s.trackerFilter == e.key, onTap: () => s.setTrackerFilter(e.key)),
                 ),
             ]),
           ),
           const SizedBox(height: 8),
           if (list.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(40),
-              child: Center(child: Text('Nothing here yet.', style: TextStyle(color: Vice.muted, fontSize: 16))),
+            Padding(
+              padding: const EdgeInsets.all(40),
+              child: Center(
+                child: Text(
+                  s.trackerFilter == TrackerFilter.todo && s.query.isEmpty ? t.trackerEmptyTodo : t.trackerEmpty,
+                  style: const TextStyle(color: Vice.muted, fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
           for (final c in list)
             Padding(
@@ -102,8 +119,7 @@ class TrackerTab extends StatelessWidget {
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text(c.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17)),
                             const SizedBox(height: 4),
-                            Text(c.unlockRequirement,
-                                style: const TextStyle(color: Vice.muted, fontSize: 14.5, height: 1.4)),
+                            Text(c.unlockRequirement, style: const TextStyle(color: Vice.muted, fontSize: 15, height: 1.4)),
                           ]),
                         ),
                       ),

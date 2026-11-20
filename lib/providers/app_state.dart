@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../l10n/strings.dart';
 import '../models/content.dart';
 import '../services/cheat_repository.dart';
 
@@ -49,6 +50,7 @@ class AppState extends ChangeNotifier {
   String? focusedId;
   bool syncing = false;
 
+  Strings get t => Strings(repo.lang);
   ContentData get data => _data;
   List<Cheat> get cheats => _data.cheats;
   List<CheatCategory> get categories => _data.categories;

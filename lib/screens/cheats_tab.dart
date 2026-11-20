@@ -5,6 +5,8 @@ import '../models/content.dart';
 import '../providers/app_state.dart';
 import '../widgets/cheat_card.dart';
 import '../widgets/neon_chip.dart';
+import '../widgets/notice_banners.dart';
+import '../widgets/sync_feedback.dart';
 import '../widgets/theme.dart';
 
 class CheatsTab extends StatelessWidget {
@@ -13,38 +15,45 @@ class CheatsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<AppState>();
+    final t = s.t;
     final list = s.cheatsTabList;
     final favs = s.favorites;
     return RefreshIndicator(
       color: Vice.pink,
       backgroundColor: Vice.surfaceHi,
-      onRefresh: () async {
-        await s.refresh(force: true);
-      },
+      onRefresh: () => refreshWithFeedback(context, s),
       child: CustomScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
+          const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: NoticeBanners())),
+          const SliverToBoxAdapter(child: _GuideCard()),
           if (favs.isNotEmpty) ...[
-            _label('★  PINNED', Vice.gold),
+            _label('${t.pinned} (${favs.length})', Vice.gold, icon: Icons.star_rounded),
             SliverList.builder(itemCount: favs.length, itemBuilder: (_, i) => CheatCard(cheat: favs[i])),
           ],
           SliverPersistentHeader(pinned: true, delegate: _ChipsHeader(s)),
+          if (favs.isNotEmpty) _label('${t.allCheats} (${list.length})', Vice.muted),
           if (list.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.search_off_rounded, size: 48, color: Vice.muted),
-                  const SizedBox(height: 8),
-                  const Text('No cheats match your search.', style: TextStyle(color: Vice.muted, fontSize: 16)),
-                  TextButton(
-                    onPressed: () {
-                      s.setQuery('');
-                      s.setCategory(kAllCategories);
-                    },
-                    child: const Text('Clear filters'),
-                  ),
-                ]),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.search_off_rounded, size: 48, color: Vice.muted),
+                    const SizedBox(height: 8),
+                    Text(t.noMatch, style: const TextStyle(color: Vice.muted, fontSize: 16), textAlign: TextAlign.center),
+                    const SizedBox(height: 8),
+                    FilledButton.tonal(
+                      onPressed: () {
+                        s.setQuery('');
+                        s.setCategory(kAllCategories);
+                      },
+                      child: Text(t.clearFilters),
+                    ),
+                  ]),
+                ),
               ),
             )
           else
@@ -55,12 +64,99 @@ class CheatsTab extends StatelessWidget {
     );
   }
 
-  SliverToBoxAdapter _label(String t, Color c) => SliverToBoxAdapter(
+  SliverToBoxAdapter _label(String text, Color c, {IconData? icon}) => SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 16, 0),
-          child: Text(t, style: TextStyle(color: c, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 13)),
+          padding: const EdgeInsets.fromLTRB(20, 10, 16, 2),
+          child: Row(children: [
+            if (icon != null) ...[Icon(icon, size: 16, color: c), const SizedBox(width: 6)],
+            Flexible(
+              child: Text(text, style: TextStyle(color: c, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 13)),
+            ),
+          ]),
         ),
       );
+}
+
+/// How to enter a code on the selected console + the collapsible story note.
+class _GuideCard extends StatelessWidget {
+  const _GuideCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<AppState>();
+    final t = s.t;
+    final reduce = MediaQuery.of(context).disableAnimations;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: Vice.cyan.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Vice.cyan.withValues(alpha: 0.5)),
+          ),
+          child: Row(children: [
+            const Icon(Icons.phone_iphone_rounded, size: 20, color: Vice.cyan),
+            const SizedBox(width: 10),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: reduce ? Duration.zero : Vice.dur,
+                layoutBuilder: (current, previous) => Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [...previous, if (current != null) current],
+                ),
+                child: Text(
+                  t.phoneHint(s.platform == 'ps5'),
+                  key: ValueKey(s.platform),
+                  style: const TextStyle(color: Vice.cyan, fontWeight: FontWeight.w800, fontSize: 15),
+                ),
+              ),
+            ),
+          ]),
+        ),
+        AnimatedSize(
+          duration: reduce ? Duration.zero : Vice.dur,
+          curve: Curves.easeOut,
+          alignment: Alignment.topCenter,
+          child: s.bannerDismissed
+              ? Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: () => s.dismissBanner(false),
+                    icon: const Icon(Icons.info_outline_rounded, size: 18),
+                    label: Text(t.showNote),
+                    style: TextButton.styleFrom(foregroundColor: Vice.muted, minimumSize: const Size(48, 48)),
+                  ),
+                )
+              : Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.fromLTRB(12, 4, 0, 4),
+                  decoration: BoxDecoration(
+                    color: Vice.surface,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Vice.orange.withValues(alpha: 0.5)),
+                  ),
+                  child: Row(children: [
+                    const Icon(Icons.info_rounded, size: 18, color: Vice.orange),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(t.note, style: const TextStyle(color: Vice.muted, fontSize: 13.5, height: 1.4)),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: t.hideNote,
+                      onPressed: () => s.dismissBanner(true),
+                      icon: const Icon(Icons.close_rounded, size: 20, color: Vice.muted),
+                    ),
+                  ]),
+                ),
+        ),
+      ]),
+    );
+  }
 }
 
 class _ChipsHeader extends SliverPersistentHeaderDelegate {
@@ -78,7 +174,7 @@ class _ChipsHeader extends SliverPersistentHeaderDelegate {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: [
-            for (final c in [const CheatCategory(kAllCategories, 'All'), ...s.categories])
+            for (final c in [CheatCategory(kAllCategories, s.t.filterAll), ...s.categories])
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: NeonChip(

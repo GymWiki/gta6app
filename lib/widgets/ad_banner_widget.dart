@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -23,7 +21,7 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   Timer? _retry;
 
   String get _unitId {
-    final android = Platform.isAndroid;
+    final android = defaultTargetPlatform == TargetPlatform.android;
     if (kDebugMode) return android ? AdConfig.testAndroidBanner : AdConfig.testIosBanner;
     return android ? AdConfig.prodAndroidBanner : AdConfig.prodIosBanner;
   }
@@ -42,36 +40,61 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
   Future<void> _load() async {
     if (_loading || _width == null) return;
-    if (!(Platform.isAndroid || Platform.isIOS)) return;
+    if (!adsSupported) return;
     _loading = true;
     _retry?.cancel();
-    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(_width!);
-    if (!mounted) { _loading = false; return; }
-    if (size == null) { _loading = false; _scheduleRetry(); return; }
-    final old = _ad;
-    final ad = BannerAd(
-      adUnitId: _unitId,
-      size: size,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (a) {
-          _loading = false;
-          if (!mounted) { a.dispose(); return; }
-          setState(() => _loaded = true);
-        },
-        onAdFailedToLoad: (a, _) {
-          a.dispose();
-          _loading = false;
-          if (!mounted) return;
-          setState(() { _ad = null; _loaded = false; });
-          _scheduleRetry();
-        },
-      ),
-    );
-    _ad = ad;
-    old?.dispose();
-    _loaded = false;
-    await ad.load();
+    try {
+      final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(_width!);
+      if (!mounted) {
+        _loading = false;
+        return;
+      }
+      if (size == null) {
+        _loading = false;
+        _scheduleRetry();
+        return;
+      }
+      final old = _ad;
+      final ad = BannerAd(
+        adUnitId: _unitId,
+        size: size,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (a) {
+            _loading = false;
+            if (!mounted) {
+              a.dispose();
+              return;
+            }
+            setState(() => _loaded = true);
+          },
+          onAdFailedToLoad: (a, _) {
+            a.dispose();
+            _loading = false;
+            if (!mounted) return;
+            setState(() {
+              _ad = null;
+              _loaded = false;
+            });
+            _scheduleRetry();
+          },
+        ),
+      );
+      _ad = ad;
+      old?.dispose();
+      _loaded = false;
+      await ad.load();
+    } catch (_) {
+      // Ads must never break the app: collapse and try again later.
+      _loading = false;
+      if (mounted) {
+        setState(() {
+          _ad = null;
+          _loaded = false;
+        });
+        _scheduleRetry();
+      }
+    }
   }
 
   void _scheduleRetry() {

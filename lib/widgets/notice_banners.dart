@@ -15,7 +15,7 @@ class NoticeBanners extends StatelessWidget {
     final showSchema = s.schemaTooNew && !s.schemaNoticeDismissed;
     if (a == null && !showSchema) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
       child: Column(children: [
         if (a != null)
           _Banner(
@@ -23,14 +23,16 @@ class NoticeBanners extends StatelessWidget {
             color: Vice.pink,
             title: a.title,
             message: a.message,
+            closeLabel: s.t.close,
             onClose: s.dismissAnnouncement,
           ),
         if (showSchema)
           _Banner(
             icon: Icons.system_update_rounded,
             color: Vice.cyan,
-            title: 'Update de app voor nieuwe functies',
-            message: 'Er is nieuwe content beschikbaar die deze versie nog niet ondersteunt.',
+            title: s.t.appUpdateTitle,
+            message: s.t.appUpdateBody,
+            closeLabel: s.t.close,
             onClose: s.dismissSchemaNotice,
           ),
       ]),
@@ -43,8 +45,10 @@ class _Banner extends StatelessWidget {
   final Color color;
   final String title;
   final String message;
+  final String closeLabel;
   final VoidCallback onClose;
-  const _Banner({required this.icon, required this.color, required this.title, required this.message, required this.onClose});
+  const _Banner(
+      {required this.icon, required this.color, required this.title, required this.message, required this.closeLabel, required this.onClose});
 
   @override
   Widget build(BuildContext context) => Container(
@@ -66,7 +70,7 @@ class _Banner extends StatelessWidget {
               Text(message, style: const TextStyle(color: Vice.muted, fontSize: 13, height: 1.35)),
             ]),
           ),
-          IconButton(tooltip: 'Sluiten', onPressed: onClose, icon: const Icon(Icons.close_rounded, size: 20, color: Vice.muted)),
+          IconButton(tooltip: closeLabel, onPressed: onClose, icon: const Icon(Icons.close_rounded, size: 20, color: Vice.muted)),
         ]),
       );
 }
