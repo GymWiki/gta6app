@@ -1,9 +1,9 @@
 enum CheatStatus { verified, unverified, rumor }
 
-class Category {
+class CheatCategory {
   final String id;
   final String name;
-  const Category(this.id, this.name);
+  const CheatCategory(this.id, this.name);
 }
 
 /// A cheat code for one platform: a D-pad sequence or a typed string.
@@ -58,7 +58,7 @@ class ContentData {
   final int schemaVersion;
   final int contentVersion;
   final String updatedAt;
-  final List<Category> categories;
+  final List<CheatCategory> categories;
   final List<Cheat> cheats;
   final Announcement? announcement;
   final String rawJson;

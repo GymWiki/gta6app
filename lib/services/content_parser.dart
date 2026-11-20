@@ -66,7 +66,7 @@ class ContentParser {
     if (rawCats is! List) throw const ContentException('categories missing');
     if (rawCheats is! List) throw const ContentException('cheats missing');
 
-    final categories = <Category>[];
+    final categories = <CheatCategory>[];
     for (final c in rawCats) {
       try {
         if (c is! Map) _bad('not an object');
@@ -74,7 +74,7 @@ class ContentParser {
         final name = localize(c['name'], lang);
         if (id is! String || id.isEmpty || name == null) _bad('id or name missing');
         if (categories.any((x) => x.id == id)) _bad('duplicate id');
-        categories.add(Category(id, name));
+        categories.add(CheatCategory(id, name));
       } catch (e) {
         skip('skipped category ($e): $c');
       }
@@ -104,7 +104,7 @@ class ContentParser {
     );
   }
 
-  static Cheat _parseCheat(Object? c, String lang, List<Category> categories) {
+  static Cheat _parseCheat(Object? c, String lang, List<CheatCategory> categories) {
     if (c is! Map) _bad('not an object');
     final id = c['id'];
     if (id is! String || id.isEmpty) _bad('id missing');

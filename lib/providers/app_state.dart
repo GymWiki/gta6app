@@ -51,7 +51,7 @@ class AppState extends ChangeNotifier {
 
   ContentData get data => _data;
   List<Cheat> get cheats => _data.cheats;
-  List<Category> get categories => _data.categories;
+  List<CheatCategory> get categories => _data.categories;
   int get total => cheats.length;
   int get unlockedCount => cheats.where((c) => unlockedIds.contains(c.id)).length;
   bool get schemaTooNew => repo.schemaTooNew;

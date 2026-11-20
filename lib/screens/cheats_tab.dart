@@ -78,7 +78,7 @@ class _ChipsHeader extends SliverPersistentHeaderDelegate {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: [
-            for (final c in [const Category(kAllCategories, 'All'), ...s.categories])
+            for (final c in [const CheatCategory(kAllCategories, 'All'), ...s.categories])
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: NeonChip(
