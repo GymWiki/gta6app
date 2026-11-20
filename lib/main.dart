@@ -18,11 +18,12 @@ Future<void> main() async {
     } catch (_) {}
   }
   final prefs = await SharedPreferences.getInstance();
-  final repo = CheatRepository(prefs);
+  final lang = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+  final repo = CheatRepository(prefs, lang: lang);
   final data = await repo.loadLocal();
   final state = AppState(repo, data);
   runApp(ChangeNotifierProvider.value(value: state, child: const ViceCodesApp()));
-  state.sync(); // non-blocking background OTA check
+  state.refresh(); // non-blocking, throttled background check
 }
 
 class ViceCodesApp extends StatelessWidget {

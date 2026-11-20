@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../models/cheat.dart';
+import '../models/content.dart';
 import '../providers/app_state.dart';
+import 'cheat_chips.dart';
 import 'dpad_pills.dart';
 import 'theme.dart';
 
@@ -17,13 +18,16 @@ class CheatCard extends StatelessWidget {
     final fav = s.favoriteIds.contains(cheat.id);
     final unlocked = s.unlockedIds.contains(cheat.id);
     final focused = s.focusedId == cheat.id;
-    final accent = Vice.categoryColor(cheat.category);
+    final accent = Vice.categoryColor(cheat.categoryId);
+    final badge = s.badgeFor(cheat);
+    final code = cheat.codeFor(s.platform);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: PressScale(
         onTap: () {
           HapticFeedback.selectionClick();
           s.focus(cheat.id);
+          s.markSeen(cheat);
         },
         child: NeonCard(
           accent: accent,
@@ -31,7 +35,7 @@ class CheatCard extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(14, 12, 6, 14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Icon(Vice.categoryIcon(cheat.category), size: 18, color: accent),
+              Icon(Vice.categoryIcon(cheat.categoryId), size: 18, color: accent),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(cheat.name,
@@ -66,8 +70,21 @@ class CheatCard extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: Text(cheat.effect, style: const TextStyle(color: Vice.muted, fontSize: 15, height: 1.4)),
             ),
-            const SizedBox(height: 14),
-            DpadPills(sequence: cheat.dpadSequence),
+            const SizedBox(height: 12),
+            Wrap(spacing: 6, runSpacing: 6, children: [
+              StatusChip(status: cheat.status),
+              if (badge != null) BadgeChip(badge: badge),
+            ]),
+            const SizedBox(height: 12),
+            DpadPills(code: code),
+            for (final extra in const ['phone', 'pc'])
+              if (cheat.codeFor(extra) != null) ...[
+                const SizedBox(height: 10),
+                Text(extra.toUpperCase(),
+                    style: const TextStyle(color: Vice.muted, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1)),
+                const SizedBox(height: 4),
+                DpadPills(code: cheat.codeFor(extra)),
+              ],
           ]),
         ),
       ),

@@ -37,20 +37,20 @@ class Vice {
   static const dur = Duration(milliseconds: 200);
 
   static Color categoryColor(String c) => switch (c) {
-        'Player' => cyan,
-        'Combat' => const Color(0xFFFF4D5E),
-        'Vehicles' => orange,
-        'Environment' => const Color(0xFF3DFFB0),
-        'Filters' => purple,
+        'player' => cyan,
+        'combat' => const Color(0xFFFF4D5E),
+        'vehicles' => orange,
+        'environment' => const Color(0xFF3DFFB0),
+        'filters' => purple,
         _ => pink,
       };
 
   static IconData categoryIcon(String c) => switch (c) {
-        'Player' => Icons.person_rounded,
-        'Combat' => Icons.gps_fixed_rounded,
-        'Vehicles' => Icons.directions_car_rounded,
-        'Environment' => Icons.wb_twilight_rounded,
-        'Filters' => Icons.filter_vintage_rounded,
+        'player' => Icons.person_rounded,
+        'combat' => Icons.gps_fixed_rounded,
+        'vehicles' => Icons.directions_car_rounded,
+        'environment' => Icons.wb_twilight_rounded,
+        'filters' => Icons.filter_vintage_rounded,
         _ => Icons.bolt_rounded,
       };
 

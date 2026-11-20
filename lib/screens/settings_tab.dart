@@ -17,7 +17,10 @@ class SettingsTab extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Data', style: TextStyle(color: Vice.text, fontSize: 18, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
-          Text('data_version: ${s.data.dataVersion}\nlast_updated: ${s.data.lastUpdated}\ncheats loaded: ${s.total}',
+          Text(
+              'Laatst bijgewerkt: ${s.data.updatedAt.isEmpty ? '-' : s.data.updatedAt}\n'
+              'Contentversie: ${s.data.contentVersion}  ·  ${s.total} cheats\n'
+              'Laatst gecontroleerd: ${_fmt(s.lastChecked)}',
               style: const TextStyle(color: Vice.muted, fontSize: 15, height: 1.5)),
           const SizedBox(height: 16),
           FilledButton.icon(
@@ -26,19 +29,21 @@ class SettingsTab extends StatelessWidget {
             onPressed: s.syncing
                 ? null
                 : () async {
-                    final r = await s.sync();
+                    final r = await s.refresh(force: true);
                     if (!context.mounted) return;
-                    final msg = switch (r) {
-                      SyncResult.updated => 'Updated to data version ${s.data.dataVersion}.',
-                      SyncResult.upToDate => 'Already up to date.',
-                      SyncResult.failed => 'Could not reach the server. Using saved data.',
+                    final msg = switch (r.status) {
+                      SyncStatus.updated => 'Bijgewerkt naar contentversie ${s.data.contentVersion}.',
+                      SyncStatus.notModified || SyncStatus.skippedThrottle || SyncStatus.busy => 'Je hebt al de nieuwste content.',
+                      SyncStatus.schemaTooNew => 'Update de app voor nieuwe functies.',
+                      SyncStatus.notConfigured => 'Geen content-URL ingesteld. Gebundelde content wordt gebruikt.',
+                      SyncStatus.failed => 'Geen verbinding. Opgeslagen content wordt gebruikt.',
                     };
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
                   },
             icon: s.syncing
                 ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.sync),
-            label: const Text('Force Sync Data'),
+            label: const Text('Nu verversen'),
           ),
         ]),
       ),
@@ -59,6 +64,12 @@ class SettingsTab extends StatelessWidget {
         style: TextStyle(color: Vice.muted, fontSize: 13, height: 1.5),
       ),
     ]);
+  }
+
+  static String _fmt(DateTime? d) {
+    if (d == null) return 'nog niet';
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${d.year}-${two(d.month)}-${two(d.day)} ${two(d.hour)}:${two(d.minute)}';
   }
 
   Future<void> _confirmReset(BuildContext context, AppState s) async {

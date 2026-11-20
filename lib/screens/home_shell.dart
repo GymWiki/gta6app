@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/app_state.dart';
 import '../widgets/ad_banner_widget.dart';
+import '../widgets/notice_banners.dart';
 import '../widgets/theme.dart';
 import 'cheats_tab.dart';
 import 'settings_tab.dart';
@@ -14,8 +15,26 @@ class HomeShell extends StatefulWidget {
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _tab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Throttled inside AppState/repository (max once per few hours).
+    if (state == AppLifecycleState.resumed) context.read<AppState>().refresh();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +45,7 @@ class _HomeShellState extends State<HomeShell> {
           bottom: false,
           child: Column(children: [
             if (_tab != 2) const _StickyHeader() else const _TitleBar(),
+            if (_tab != 2) const NoticeBanners(),
             Expanded(
               child: IndexedStack(index: _tab, children: const [CheatsTab(), TrackerTab(), SettingsTab()]),
             ),

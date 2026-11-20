@@ -18,7 +18,7 @@ class TrackerTab extends StatelessWidget {
       color: Vice.pink,
       backgroundColor: Vice.surfaceHi,
       onRefresh: () async {
-        await s.sync();
+        await s.refresh(force: true);
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -88,7 +88,7 @@ class TrackerTab extends StatelessWidget {
                   label: '${c.name}. ${c.unlockRequirement}',
                   excludeSemantics: true,
                   child: NeonCard(
-                    accent: Vice.categoryColor(c.category),
+                    accent: Vice.categoryColor(c.categoryId),
                     padding: const EdgeInsets.fromLTRB(8, 10, 14, 12),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       SizedBox(

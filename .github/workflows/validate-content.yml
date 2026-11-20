@@ -1,0 +1,34 @@
+name: Validate content
+
+on:
+  pull_request:
+    paths: [content.json, content.schema.json, tool/validate_content.py, .github/workflows/validate-content.yml]
+  push:
+    paths: [content.json, content.schema.json, tool/validate_content.py, .github/workflows/validate-content.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install jsonschema
+      - name: Validate against schema
+        run: python3 tool/validate_content.py
+      - name: contentVersion must increase when content changes (PR)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+        run: python3 tool/validate_content.py --against "$BASE_REF"
+      - name: contentVersion must increase when content changes (push)
+        if: github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: python3 tool/validate_content.py --against "$BEFORE_SHA"

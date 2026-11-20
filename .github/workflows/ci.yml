@@ -20,8 +20,6 @@ jobs:
           # Migrate, then unpin.
           flutter-version: 3.35.0
           cache: true
-      - name: Validate cheat data
-        run: python3 tool/validate_cheats.py --strict
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test

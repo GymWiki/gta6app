@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/content.dart';
 import '../providers/app_state.dart';
 import '../widgets/cheat_card.dart';
 import '../widgets/neon_chip.dart';
@@ -18,7 +19,7 @@ class CheatsTab extends StatelessWidget {
       color: Vice.pink,
       backgroundColor: Vice.surfaceHi,
       onRefresh: () async {
-        await s.sync();
+        await s.refresh(force: true);
       },
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -39,7 +40,7 @@ class CheatsTab extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       s.setQuery('');
-                      s.setCategory('All');
+                      s.setCategory(kAllCategories);
                     },
                     child: const Text('Clear filters'),
                   ),
@@ -77,14 +78,14 @@ class _ChipsHeader extends SliverPersistentHeaderDelegate {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           children: [
-            for (final c in ['All', ...s.categories])
+            for (final c in [const Category(kAllCategories, 'All'), ...s.categories])
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: NeonChip(
-                  label: '$c (${s.countFor(c)})',
-                  selected: s.category == c,
-                  color: c == 'All' ? Vice.pink : Vice.categoryColor(c),
-                  onTap: () => s.setCategory(c),
+                  label: '${c.name} (${s.countFor(c.id)})',
+                  selected: s.category == c.id,
+                  color: c.id == kAllCategories ? Vice.pink : Vice.categoryColor(c.id),
+                  onTap: () => s.setCategory(c.id),
                 ),
               ),
           ],
