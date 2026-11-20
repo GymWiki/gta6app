@@ -15,3 +15,4 @@ ios/Runner/GeneratedPluginRegistrant.*
 # Local screenshot/measurement scratch tests
 test/_*.dart
 build/
+test/failures/
