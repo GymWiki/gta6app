@@ -27,7 +27,7 @@ class NeonChip extends StatelessWidget {
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: selected ? color.withOpacity(0.2) : Vice.surface,
+              color: selected ? color.withValues(alpha: 0.2) : Vice.surface,
               borderRadius: BorderRadius.circular(22),
               border: Border.all(color: selected ? color : Vice.border, width: selected ? 1.6 : 1),
             ),

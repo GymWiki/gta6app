@@ -17,11 +17,11 @@ class DpadPills extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: Vice.gold.withOpacity(0.08),
-            border: Border.all(color: Vice.gold.withOpacity(0.6)),
+            color: Vice.gold.withValues(alpha: 0.08),
+            border: Border.all(color: Vice.gold.withValues(alpha: 0.6)),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Row(mainAxisSize: MainAxisSize.min, children: const [
+          child: const Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.search_rounded, size: 18, color: Vice.gold),
             SizedBox(width: 8),
             Flexible(
@@ -45,10 +45,10 @@ class DpadPills extends StatelessWidget {
               height: 44,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Vice.cyan.withOpacity(0.10),
+                color: Vice.cyan.withValues(alpha: 0.10),
                 border: Border.all(color: Vice.cyan, width: 1.6),
                 borderRadius: BorderRadius.circular(14),
-                boxShadow: [BoxShadow(color: Vice.cyan.withOpacity(0.3), blurRadius: 10, spreadRadius: -3)],
+                boxShadow: [BoxShadow(color: Vice.cyan.withValues(alpha: 0.3), blurRadius: 10, spreadRadius: -3)],
               ),
               child: Text(_arrows[d] ?? '?',
                   style: const TextStyle(color: Vice.cyan, fontSize: 26, fontWeight: FontWeight.w900, height: 1)),

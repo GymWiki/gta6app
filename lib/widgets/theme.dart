@@ -71,7 +71,7 @@ class Vice {
       canvasColor: bg,
       textTheme: ThemeData.dark().textTheme.apply(bodyColor: text, displayColor: text),
       splashFactory: InkSparkle.splashFactory,
-      focusColor: cyan.withOpacity(0.3),
+      focusColor: cyan.withValues(alpha: 0.3),
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? cyan : null),
         checkColor: const WidgetStatePropertyAll(bg),
@@ -80,7 +80,7 @@ class Vice {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: surface,
-        indicatorColor: pink.withOpacity(0.22),
+        indicatorColor: pink.withValues(alpha: 0.22),
         height: 68,
         labelTextStyle: WidgetStateProperty.resolveWith((s) => TextStyle(
               fontSize: 12,
@@ -97,7 +97,7 @@ class Vice {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: surfaceHi,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
@@ -144,7 +144,7 @@ class NeonCard extends StatelessWidget {
         color: Vice.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: glow ? a : Vice.border, width: glow ? 1.6 : 1),
-        boxShadow: glow ? [BoxShadow(color: a.withOpacity(0.35), blurRadius: 18, spreadRadius: -2)] : const [],
+        boxShadow: glow ? [BoxShadow(color: a.withValues(alpha: 0.35), blurRadius: 18, spreadRadius: -2)] : const [],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(17),

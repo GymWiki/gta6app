@@ -77,9 +77,9 @@ class _StickyHeader extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: Vice.cyan.withOpacity(0.10),
+            color: Vice.cyan.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Vice.cyan.withOpacity(0.5)),
+            border: Border.all(color: Vice.cyan.withValues(alpha: 0.5)),
           ),
           child: Row(children: [
             const Icon(Icons.phone_iphone_rounded, size: 18, color: Vice.cyan),
@@ -134,7 +134,7 @@ class _StickyHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Vice.surface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Vice.orange.withOpacity(0.5)),
+                    border: Border.all(color: Vice.orange.withValues(alpha: 0.5)),
                   ),
                   child: Row(children: [
                     const Icon(Icons.info_rounded, size: 18, color: Vice.orange),

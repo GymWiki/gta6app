@@ -16,6 +16,9 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          # Pinned: the newest stable deprecates package:flutter/material.dart.
+          # Migrate, then unpin.
+          flutter-version: 3.35.0
           cache: true
       - name: Validate cheat data
         run: python3 tool/validate_cheats.py --strict

@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/cheat.dart';
 
 /// Point this at your hosted cheats.json (GitHub Raw, Vercel, ...).
-const String REMOTE_JSON_URL =
+const String remoteJsonUrl =
     'https://raw.githubusercontent.com/gymwiki/gta6app/main/assets/cheats.json';
 
 enum SyncResult { updated, upToDate, failed }
@@ -61,7 +61,7 @@ class CheatRepository {
   /// Returns the new data via [onUpdate] only if the remote is newer.
   Future<SyncResult> sync(int currentVersion, void Function(CheatData) onUpdate) async {
     try {
-      final res = await _client.get(Uri.parse(REMOTE_JSON_URL)).timeout(const Duration(seconds: 4));
+      final res = await _client.get(Uri.parse(remoteJsonUrl)).timeout(const Duration(seconds: 4));
       if (res.statusCode != 200) return SyncResult.failed;
       final remote = parse(utf8.decode(res.bodyBytes));
       if (remote.dataVersion <= currentVersion || remote.cheats.isEmpty) return SyncResult.upToDate;

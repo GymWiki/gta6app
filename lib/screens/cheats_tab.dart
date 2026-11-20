@@ -72,7 +72,7 @@ class _ChipsHeader extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrink, bool overlaps) => Container(
-        color: Vice.bg.withOpacity(0.96),
+        color: Vice.bg.withValues(alpha: 0.96),
         child: ListView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
