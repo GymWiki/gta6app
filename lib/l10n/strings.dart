@@ -129,4 +129,12 @@ class Strings {
       'Cheats whose code is not known yet go in a collapsed section at the bottom.',
       'Cheats waarvan de code nog niet bekend is komen in een ingeklapte sectie onderaan.');
   String get showHowItWorks => _('How it works', 'Uitleg bekijken');
+
+  // Console button sequence
+  String get stepOpenPhone => _('Open the phone', 'Open de telefoon');
+  String get stepHoldPs5 => _('Hold L1, then press R1', 'Houd L1 vast en druk op R1');
+  String get stepHoldXbox => _('Hold LB, then press RB', 'Houd LB vast en druk op RB');
+  String stepEnterCode(int n) => _('Enter the code ($n buttons)', 'Voer de code in ($n knoppen)');
+  String get hold => _('HOLD', 'HOUD VAST');
+  String get press => _('PRESS', 'DRUK');
 }

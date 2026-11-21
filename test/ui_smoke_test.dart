@@ -22,6 +22,7 @@ Future<AppState> pumpApp(
   String lang = 'en',
   double textScale = 1.0,
   Size size = mediumPhone,
+  bool disableAnimations = false,
   Map<String, Object> prefs = const {'platformChosen': true, 'bannerDismissed': true},
 }) async {
   SharedPreferences.setMockInitialValues(prefs);
@@ -44,7 +45,7 @@ Future<AppState> pumpApp(
     child: MaterialApp(
       theme: Vice.theme(),
       builder: (context, child) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale)),
+        data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(textScale), disableAnimations: disableAnimations),
         child: child!,
       ),
       home: const HomeShell(),
@@ -97,6 +98,25 @@ Future<void> tapChip(WidgetTester tester, String label) async {
     await tester.pumpAndSettle();
   }
   await tester.tap(find.text(label).hitTestable());
+  await tester.pumpAndSettle();
+}
+
+/// Scrolls the cheats list until [finder] is built and visible, like a user would.
+Future<void> showInList(WidgetTester tester, Finder finder) async {
+  final list = find.descendant(of: find.byType(CustomScrollView), matching: find.byType(Scrollable)).first;
+  await tester.scrollUntilVisible(finder, 150, scrollable: list, maxScrolls: 200);
+  await tester.pumpAndSettle();
+}
+
+/// Scroll a row into view (clear of the pinned header) and tap it, like a user.
+Future<void> tapRow(WidgetTester tester, String name) async {
+  // A title can appear twice (quick strip + row): the row is the one inside the list rows.
+  final title = find.descendant(of: find.byType(CheatRow), matching: find.text(name));
+  await showInList(tester, title);
+  await tester.ensureVisible(title.first);
+  await tester.drag(find.byType(CustomScrollView), const Offset(0, 150));
+  await tester.pumpAndSettle();
+  await tester.tap(title.first);
   await tester.pumpAndSettle();
 }
 
@@ -241,6 +261,19 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    uiTest('with "remove animations" on: opening, switching and closing rows does not break layout', (tester) async {
+      final s = await pumpApp(tester, disableAnimations: true);
+      await tester.tap(find.text('\$250,000'));
+      await tester.pumpAndSettle();
+      expect(find.text('HOW TO UNLOCK'), findsOneWidget);
+      await tapRow(tester, 'Raise Heat Level');
+      expect(find.text('HOW TO UNLOCK'), findsOneWidget);
+      await tapRow(tester, 'Raise Heat Level');
+      expect(find.text('HOW TO UNLOCK'), findsNothing);
+      expect(s.focusedId, isNull);
+      expect(tester.takeException(), isNull);
+    });
+
     uiTest('empty state at large text', (tester) async {
       await pumpApp(tester, textScale: 2.0, size: const Size(360, 640));
       await typeQuery(tester, 'zzzz-nothing');
@@ -360,11 +393,45 @@ void main() {
       expect(find.text('Mark as unlocked'), findsOneWidget);
       expect(find.text('HOW TO UNLOCK'), findsOneWidget);
 
-      await tester.tap(find.text(second.name));
-      await tester.pumpAndSettle();
+      await tapRow(tester, second.name); // the open row is tall: scroll like a user
       expect(find.text('HOW TO UNLOCK'), findsOneWidget, reason: 'the first row closed when the second opened');
       expect(find.text(first.unlockRequirement), findsNothing);
       expect(find.text(second.unlockRequirement), findsOneWidget);
+    });
+
+    uiTest('expanded row shows the exact console buttons, and they follow the platform', (tester) async {
+      final s = await pumpApp(tester);
+      await tester.tap(find.text('\$250,000'));
+      await tester.pumpAndSettle();
+      expect(find.text('Hold L1, then press R1'), findsOneWidget);
+      expect(find.text('L1'), findsOneWidget);
+      expect(find.text('R1'), findsOneWidget);
+      await tester.tap(find.text('XBOX'));
+      await tester.pumpAndSettle();
+      expect(s.platform, 'xbox');
+      expect(find.text('Hold LB, then press RB'), findsOneWidget);
+      expect(find.text('LB'), findsOneWidget);
+      expect(find.text('L1'), findsNothing);
+    });
+
+    uiTest('closing a tall row above the tapped one does not make the list jump', (tester) async {
+      final s = await pumpApp(tester);
+      await tester.tap(find.text(s.view.mainCheats[0].name));
+      await tester.pumpAndSettle();
+      final target = s.view.mainCheats[4].name; // far enough down to have room above after collapsing
+      final title = find.descendant(of: find.byType(CheatRow), matching: find.text(target));
+      await showInList(tester, title);
+      await tester.ensureVisible(title.first);
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, 150));
+      await tester.pumpAndSettle();
+      final yBefore = tester.getTopLeft(title.first).dy;
+      await tester.tap(title.first);
+      await tester.pump(); // the very next frame: the other row already collapsed, no flash
+      expect(title, findsWidgets, reason: 'the tapped row is still on screen in that frame');
+      expect(tester.getTopLeft(title.first).dy, closeTo(yBefore, 2), reason: 'the tapped row stays where the finger is');
+      await tester.pumpAndSettle();
+      expect(s.focusedId, s.view.mainCheats[4].id);
+      expect(find.text('HOW TO UNLOCK'), findsOneWidget);
     });
 
     uiTest('copy code puts the code on the clipboard with haptics and a snackbar', (tester) async {

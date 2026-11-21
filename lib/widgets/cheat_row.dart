@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/content.dart';
 import '../providers/app_state.dart';
 import 'code_keys.dart';
+import 'console_buttons.dart';
 import 'highlight_text.dart';
 import 'status_icon.dart';
 import 'theme.dart';
@@ -36,11 +37,21 @@ class CheatRow extends StatelessWidget {
         child: InkWell(
           onTap: () {
             HapticFeedback.selectionClick();
+            // If the row that is open sits ABOVE this one, closing it makes everything below
+            // jump up by its height. Compensate in the same frame so this row stays put.
+            final order = s.view.all;
+            final prevIndex = s.focusedId == null ? -1 : order.indexWhere((c) => c.id == s.focusedId);
+            final myIndex = order.indexWhere((c) => c.id == cheat.id);
+            final shift = (prevIndex >= 0 && myIndex >= 0 && prevIndex < myIndex && s.focusedId != cheat.id) ? s.expandedHeight : 0.0;
+            final position = Scrollable.maybeOf(context)?.position;
             s.focus(cheat.id);
+            if (shift > 0 && position != null) {
+              position.jumpTo((position.pixels - shift).clamp(position.minScrollExtent, position.maxScrollExtent));
+            }
             if (s.focusedId == cheat.id) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (context.mounted) {
-                  Scrollable.ensureVisible(context, alignment: 0.1, duration: dur, curve: Curves.easeOut);
+                  Scrollable.ensureVisible(context, alignment: 0.06, duration: dur, curve: Curves.easeOut);
                 }
               });
             }
@@ -113,25 +124,63 @@ class CheatRow extends StatelessWidget {
         ),
         // Expanded part lives outside the InkWell row padding so it can use the full width.
       ),
-    ).withExpansion(expanded: expanded, cheat: cheat, accent: accent);
+    ).withExpansion(expanded: expanded, instant: !expanded && s.instantCollapse, cheat: cheat, accent: accent);
   }
 }
 
 extension on Widget {
-  Widget withExpansion({required bool expanded, required Cheat cheat, required Color accent}) => Builder(builder: (context) {
-        final reduce = MediaQuery.of(context).disableAnimations;
+  Widget withExpansion({required bool expanded, required bool instant, required Cheat cheat, required Color accent}) => Builder(builder: (context) {
+        final skipAnimation = MediaQuery.of(context).disableAnimations || instant;
+        final Widget body = expanded
+            ? _ReportHeight(child: ColoredBox(color: Vice.surface, child: CheatDetail(cheat: cheat, accent: accent)))
+            : const SizedBox(width: double.infinity);
         return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
           this,
-          AnimatedSize(
-            duration: reduce ? Duration.zero : Vice.dur,
-            curve: Curves.easeOut,
-            alignment: Alignment.topCenter,
-            child: expanded
-                ? ColoredBox(color: Vice.surface, child: CheatDetail(cheat: cheat, accent: accent))
-                : const SizedBox(width: double.infinity),
-          ),
+          // No AnimatedSize at all when the change must be instant (a row closing because another
+          // one opened, or "remove animations"): the scroll correction then lands in the same frame.
+          // (AnimatedSize with Duration.zero re-dirties itself during layout, so it is not an option.)
+          if (skipAnimation)
+            body
+          else
+            AnimatedSize(
+              duration: Vice.dur,
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: body,
+            ),
         ]);
       });
+}
+
+/// Tells AppState how tall the open detail is (needed to keep scroll position stable).
+class _ReportHeight extends StatefulWidget {
+  final Widget child;
+  const _ReportHeight({required this.child});
+  @override
+  State<_ReportHeight> createState() => _ReportHeightState();
+}
+
+class _ReportHeightState extends State<_ReportHeight> {
+  void _report() {
+    if (!mounted) return;
+    final h = context.size?.height;
+    if (h != null) context.read<AppState>().expandedHeight = h;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _report());
+  }
+
+  @override
+  Widget build(BuildContext context) => NotificationListener<SizeChangedLayoutNotification>(
+        onNotification: (_) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _report());
+          return false;
+        },
+        child: SizeChangedLayoutNotifier(child: widget.child),
+      );
 }
 
 class _NewDot extends StatelessWidget {
@@ -184,7 +233,11 @@ class CheatDetail extends StatelessWidget {
         const SizedBox(height: 4),
         Text(cheat.unlockRequirement, style: const TextStyle(fontSize: 14.5, height: 1.4)),
         const SizedBox(height: 12),
-        CodeKeys(code: code, t: t, size: 40),
+        // Exact buttons for the chosen console, in the order they are pressed.
+        if (code?.dpad != null)
+          ConsoleSequence(dpad: code!.dpad!, ps5: s.platform == 'ps5', t: t)
+        else
+          CodeKeys(code: code, t: t, size: 40),
         for (final extra in const ['phone', 'pc'])
           if (cheat.codeFor(extra) != null) ...[
             const SizedBox(height: 10),

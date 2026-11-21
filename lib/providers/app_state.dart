@@ -83,6 +83,14 @@ class AppState extends ChangeNotifier {
   bool noCodeExpanded = false;
   TrackerFilter trackerFilter = TrackerFilter.all;
   String? focusedId;
+
+  /// Height of the currently expanded detail (reported by the row), used to keep the tapped
+  /// row in place when a different row above it collapses.
+  double expandedHeight = 0;
+
+  /// True while the previously open row collapses because another one was opened:
+  /// that collapse is instant, so the scroll position can be corrected in the same frame.
+  bool instantCollapse = false;
   bool syncing = false;
 
   // --- memoized derived data ---
@@ -256,6 +264,7 @@ class AppState extends ChangeNotifier {
 
   /// Only one row is expanded at a time; opening one records it as "recently viewed".
   void focus(String id) {
+    instantCollapse = focusedId != null && focusedId != id;
     focusedId = focusedId == id ? null : id;
     if (focusedId != null) {
       recentIds = [id, ...recentIds.where((x) => x != id)].take(maxRecent).toList();
@@ -268,6 +277,7 @@ class AppState extends ChangeNotifier {
 
   void collapse() {
     if (focusedId == null) return;
+    instantCollapse = false;
     focusedId = null;
     notifyListeners();
   }

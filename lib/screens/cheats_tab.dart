@@ -30,7 +30,15 @@ class CheatsTab extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           const SliverToBoxAdapter(child: NoticeBanners()),
-          if (s.showQuickStrip) const SliverToBoxAdapter(child: QuickStrip()),
+          // The strip slides in/out (instead of popping in and shoving the list down under the finger).
+          SliverToBoxAdapter(
+            child: AnimatedSize(
+              duration: MediaQuery.of(context).disableAnimations ? const Duration(milliseconds: 1) : Vice.dur,
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: s.showQuickStrip ? const QuickStrip() : const SizedBox(width: double.infinity),
+            ),
+          ),
           if (view.isEmpty)
             SliverFillRemaining(hasScrollBody: false, child: _EmptyState(state: s))
           else ...[
